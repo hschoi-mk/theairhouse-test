@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
+<!-- Supabase 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase 라이브러리 -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -197,7 +200,7 @@
             border-bottom: 1px solid #e0e0e0;
         }
 
-        .result-description {
+        .result-deion {
             background: transparent;
             padding: 20px 0;
             border-radius: 0;
@@ -334,7 +337,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .type-description-section {
+        .type-deion-section {
             background: white;
             border: 1px solid #e0e0e0;
             border-radius: 12px;
@@ -342,12 +345,12 @@
             margin-bottom: 24px;
         }
 
-        .type-description-section .section-title {
+        .type-deion-section .section-title {
             margin-bottom: 12px;
             margin-top: 0;
         }
 
-        .type-description-text {
+        .type-deion-text {
             font-size: 14px;
             color: #555;
             line-height: 1.8;
@@ -938,8 +941,8 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
+    < src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></>
+    <>
         const typeData = {
             jandi: {
                 name: '펼쳐진 사람',
@@ -1475,6 +1478,23 @@
                 link.download = 'my-airhouse-stage.png';
                 document.body.appendChild(link);
                 link.click();
+                // Supabase에 결과 저장
+const personalityType = document.querySelector('.result-name')?.textContent || 'Unknown';
+const scores = {
+  JANDI: personalityScores?.JANDI || 0,
+  BARAM: personalityScores?.BARAM || 0,
+  HANOK: personalityScores?.HANOK || 0,
+  MAUM: personalityScores?.MAUM || 0,
+  SOOP: personalityScores?.SOOP || 0,
+  MADANG: personalityScores?.MADANG || 0
+};
+const dimensions = {
+  alone_together: aloneTogetherValue,
+  quiet_active: quietActiveValue,
+  stable_change: stableChangeValue,
+  introvert_extrovert: introvertExtrovertValue
+};
+saveResultToSupabase(personalityType, scores, dimensions);
                 document.body.removeChild(link);
             }).catch(err => {
                 console.error('이미지 생성 오류:', err);
@@ -1486,6 +1506,35 @@
             document.querySelector('.result-screen').classList.remove('active');
             document.querySelector('.intro-screen').classList.add('active');
         }
+        // ============ Supabase 초기화 ============
+const SUPABASE_URL = 'https://aczogoxvnusrmpevbiuf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjem9nb3h2bnVzcm1wZXZiaXVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NDM3NzEsImV4cCI6MjA5NDIxOTc3MX0.QOcrETadWs3D_tTuVvzTMJfPhr9u_ihe_JDwDpEz_eI';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 결과 저장 함수
+async function saveResultToSupabase(personalityType, scores, dimensions) {
+  try {
+    const { data, error } = await supabase
+      .from('results')
+      .insert([
+        {
+          personality_type: personalityType,
+          jandi_score: scores.JANDI,
+          baram_score: scores.BARAM,
+          hanok_score: scores.HANOK,
+          maum_score: scores.MAUM,
+          soop_score: scores.SOOP,
+          madang_score: scores.MADANG,
+          dimension_data: dimensions
+        }
+      ]);
+    
+    if (error) console.error('Supabase 저장 실패:', error);
+    else console.log('결과 저장 성공!');
+  } catch (err) {
+    console.error('저장 중 오류:', err);
+  }
+}
     </script>
 </body>
 </html>
